@@ -2,10 +2,11 @@ class Player
 	#the basic blackjack player
 	def initialize(name)
 		#initializes a player with a name
-		#other variables to be instantiated include the list of Hands (usually just 1, can be more than 1 for a split)
+		#other variables to be instantiated include the list of Hands 
+		#(usually just 1, can be more than 1 for a split)
 		#numHands: the number of hands
-		#list of bets that correspond to the hands. Note that bets can be different on split hands since you can double 
-		#down after splitting
+		#list of bets that correspond to the hands. Note that bets can be
+		#different on split hands since you can double down after splitting
 		#pot represents the total money the player has
 		#finally an ace flag to facilitate scoring
 		@name = name
@@ -34,7 +35,8 @@ class Player
 		#prints the specified hand out in a nice format
 		puts "#{@name}'s hand (number #{numHand + 1}) is"
 		for i in 0..@handList[numHand].count-1
-			puts "#{@handList[numHand][i].getName()} of #{@handList[numHand][i].getSuit()}"
+			puts "#{@handList[numHand][i].getName()}"\
+			     " of #{@handList[numHand][i].getSuit()}"
 		end
 	end
 
@@ -47,7 +49,8 @@ class Player
 	end
 		
 	def popCard(numHand)
-		#to be called only when splitting hands to change the original hand to one card
+		#to be called only when splitting hands 
+		#to change the original hand to one card
 		@handList[numHand].pop 
 	end
 
@@ -105,10 +108,12 @@ class Player
     			end
     		end
     	end
+    	 #if scoring an ace as 11 results in a bust, only score as a 1
     	if value > 21 && @hasAce == true
-    		return [altValue] #if scoring an ace as 11 results in a bust, only score as a 1
+    		return [altValue]
+    	#return both values if no bust occurs, the choice is upto the user
     	else
-    		return [value, altValue] #return both values if no bust occurs, the choice is upto the user
+    		return [value, altValue] 
     	end
     end
 
@@ -125,14 +130,17 @@ class Dealer < Player
 	#dealer class that is an extension of the player class
 	def showCard()
 		#method to show the second card of the dealer
-		puts "Dealer shows #{@handList[0][1].getName()} of #{@handList[0][1].getSuit()}"
+		puts "Dealer shows #{@handList[0][1].getName()}"\
+		     " of #{@handList[0][1].getSuit()}"
 	end
 
 	def printHand(numHand = 0)
-		#change the printHand method to avoid printing the hand number, since the dealer can never split
+		#change the printHand method to avoid printing 
+		#the hand number, since the dealer can never split
 		puts "#{@name}'s hand is"
 		for i in 0..@handList[numHand].count-1
-			puts "#{@handList[numHand][i].getName()} of #{@handList[numHand][i].getSuit()}"
+			puts "#{@handList[numHand][i].getName()}"\
+			     " of #{@handList[numHand][i].getSuit()}"
 		end
 	end
 end
@@ -143,7 +151,8 @@ class Card
 	def initialize(suit,name)
 		#three instantiation parameters:
 		#the name, suit and blackjack value. 
-		#Number cards have the same value as the number, face cards are worth 10 and ace is 11 or 1.
+		#Number cards have the same value as the number, 
+		#face cards are worth 10 and ace is 11 or 1.
 		@suit = suit
 		@name = name
 		if name.class == Fixnum
