@@ -1,3 +1,6 @@
+#defines the classes necessary for gameplay.rb (class Player and class Card)
+#Shreyas Kumar
+
 class Player
 	#the basic blackjack player
 	def initialize(name)
@@ -19,12 +22,14 @@ class Player
 	end
     
     def getName()
-    	#returns the player's name: primarily for the UI output
+    	#no input; returns the player's name: primarily for the UI output
     	return @name
     end
 
 	def addCard(card, numHand = 0)
+		#INPUT: card to add, and the number of the hand to add to (default 0)
 		#adds a card to the specified hand
+		#no output
 		@handList[numHand].push(card)
 		if card.getName() == 'A'
 			@hasAce = true #set the ace flag to true when required
@@ -32,79 +37,86 @@ class Player
 	end
 
 	def printHand(numHand = 0)
+		#INPUT: number of hand to print
+		#no output
 		#prints the specified hand out in a nice format
 		puts "#{@name}'s hand (number #{numHand + 1}) is"
-		for i in 0..@handList[numHand].count-1
-			puts "#{@handList[numHand][i].getName()}"\
-			     " of #{@handList[numHand][i].getSuit()}"
+		@handList[numHand].each do |card|
+			puts "#{card.getName()} of #{card.getSuit()}"
 		end
 	end
 
-	def addHand(card)
+	def addHand()
+		#no input
 		#adds a hand to the player. Used only when split.
 		@handList.push(Array.new)
+		card = @handList[@numHands-1].pop #gets rid of the additional card  
+		                                #in the first hand after pop
 		self.addCard(card, @numHands)
 		@numHands += 1
 		@bet.push(@bet[-1])
 	end
 		
-	def popCard(numHand)
-		#to be called only when splitting hands 
-		#to change the original hand to one card
-		@handList[numHand].pop 
-	end
 
 	def getNumHands()
+		#no input
 		#returns the number of hands
 		return @numHands
 	end
 
 	def getHand(num = 0)
+		#INPUT: optional, number of hand
 		#returns the specified hand
 		return @handList[num]
 	end
 
 	def getBet(numHand = 0)
+		#INPUT: optional number of hand
 		#returns the bet associated with the specified hand
 		return @bet[numHand]
 	end
 
 	def setBet(numHand = 0, num)
+		#INPUT: optional number of hand, and the bet value
 		#sets the bet of numHand hand to num
 		@bet[numHand] = num
 	end
 
 	def totalBet()
+		#no input
 		#returns the total outstanding bet over all hands
 		return @bet.inject{|sum, x| sum + x}
 	end
 
 	def getPot()
+		#no input
 		#returns total amount of money available, or the pot
 		return @pot
 	end
 
 	def setPot(amount)
+		#INPUT: value of pot to set to
 		#sets the pot (total money available)
 		@pot = amount
 	end
    
 
     def getValue(num = 0)
+    	#INPUT: optional input of number of hand
     	#returns the value of the specifed (through num) hand
     	value = 0
     	if @hasAce == true
     		altValue = 0 #alternate scoring with an ace
     	end
-    	for i in @handList[num]
-    		if i.getName() == 'A'
+    	@handList[num].each do |card|
+    		if card.getName() == 'A'
     			value += 11 #default score of 11
     			altValue += 1
     		else
     			#scoring for all other cards
-    			value += i.getCardValue()
+    			value += card.getCardValue()
     			if @hasAce == true
-    				altValue += i.getCardValue()
+    				altValue += card.getCardValue()
     			end
     		end
     	end
@@ -118,6 +130,7 @@ class Player
     end
 
     def reset()
+    	#no input
     	#at the end of a round, resets all initial parameters to their defaults
     	@numHands = 1
     	@handList = Array.new(1){Array.new}
@@ -129,18 +142,18 @@ end
 class Dealer < Player
 	#dealer class that is an extension of the player class
 	def showCard()
+		#no input
 		#method to show the second card of the dealer
 		puts "Dealer shows #{@handList[0][1].getName()}"\
 		     " of #{@handList[0][1].getSuit()}"
 	end
 
 	def printHand(numHand = 0)
-		#change the printHand method to avoid printing 
-		#the hand number, since the dealer can never split
+		#INPUT: optional input of number of hand
+		#prints the specified hand out, each card on a new line
 		puts "#{@name}'s hand is"
-		for i in 0..@handList[numHand].count-1
-			puts "#{@handList[numHand][i].getName()}"\
-			     " of #{@handList[numHand][i].getSuit()}"
+		@handList[numHand].each do |card|
+			puts "#{card.getName()} of #{card.getSuit()}"
 		end
 	end
 end
@@ -165,16 +178,19 @@ class Card
 	end
 
 	def getName()
+		#no input
 		#returns the name of the card
 		return @name
 	end
 
 	def getCardValue()
+		#no input
 		#returns the value of the card
 		return @value
 	end
 
 	def getSuit()
+		#no input
 		#returns the suit of the card
 		return @suit
 	end
