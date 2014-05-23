@@ -24,7 +24,8 @@ end
 def createPlayers()
 	#no input
 	#returns an array of players
-	#Creates a user specified number of players
+	#Creates a user specified number of players (maximum of 12, so the cards 
+	#don't become too predictable)
 	playerList = Array.new
     playerList.push(Player.new('Player 1'))
 	puts "Created Player 1."
@@ -32,6 +33,10 @@ def createPlayers()
 	#use less user input for example, only take in how many players are playing 
 	#in the beginning
 	while true
+		if playerList.count == 12
+			puts "You have reached the maximum number of players at this table."
+			break
+		end
 		puts "Do you want to add another player? [y/N]"
 		answer = gets
 		#create the list of players
