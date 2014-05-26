@@ -121,6 +121,7 @@ class Game
 		     " #{cardToDeal.getName()} of #{cardToDeal.getSuit()}"
 	end
 
+    
 	
 	def playTurnDealer()
 		#INPUT: takes in the dealer and deck
@@ -128,7 +129,6 @@ class Game
 		#dealer plays his turn. Counts an ace as a 11 unless it means he busts.
 		# Always hits at 16 or less, and stays at 17 or more
 		while true
-			puts "#{@playerList.last.getName()} is at #{@playerList.last.getValue()[0]}"
 			@playerList.last.printHand()
 			dealerValue = @playerList.last.getValue()[0]
 			#if dealer busts
@@ -165,8 +165,8 @@ class Game
 					#if the turn did not result in a split, go to next hand
 					#else, stay on the same hand
 					#NEEDS SOME TESTING HERE
-					if ! bool
-						numHand += 1             
+					if !bool
+						numHand += 1
 					end
 				else
 					#dealer plays turn according to the rules
@@ -184,38 +184,11 @@ class Game
 	    #iterate through players and each hand
 	    @playerList[0..-2].each do |currPlayer|
 	        for numHand in 0..currPlayer.getNumHands() - 1
-		    	currValue = currPlayer.getValue(numHand)[0]
-		    	#if the player wins (closer to 21 
-		    	#(but less than or equal to it) than the dealer)
-		    	if ((currValue > dealerValue) && (currValue <= 21)) \
-		    	  || ((dealerValue > 21) && (currValue <= 21))
-		    		currPlayer.setPot(currPlayer.getPot() + \
-		    		   (2*currPlayer.getBet(numHand)/3).to_i )
-		    		currPlayer.setBet(0, numHand)
-		    		puts "#{currPlayer.getName()}'s value of #{currValue} in hand"\
-		    		     " #{numHand+1} beats the dealer."\
-		    		     " Your pot is #{currPlayer.getPot()}"
-		    	#if the player loses (opposite of above)
-		    	elsif (currValue < dealerValue) && (currValue <= 21)
-		    		currPlayer.setPot(currPlayer.getPot() \
-		    		   - currPlayer.getBet(numHand))
-		    		currPlayer.setBet(0, numHand)
-		    		puts "#{currPlayer.getName()}'s value of #{currValue} in hand"\
-		    		     " #{numHand+1} loses to the dealer."\
-		    		     " Your pot is #{currPlayer.getPot()}"
-		    		#check to see if the player is bankrupt
-		    		if currPlayer.getPot() == 0
-						puts "You have no money left, you have lost."
-					end
-				#check for a ties
-		    	elsif (currValue == dealerValue)
-		    		currPlayer.setBet(0, numHand)
-		    		puts "We have a tie. #{currPlayer.getName()} neither wins"\
-		    		     " nor loses; you get your money back."
-		    	end
+		    	currPlayer.scoreHand(numHand, dealerValue)
 		    end
 		    #if a player is bankrupt, remove them from the table
 		    if currPlayer.getPot() == 0
+				puts "#{currPlayer.getName()} has no money left, you have lost."
 		    	playerList.delete_at(j)
 		    	@numPlayers -= 1
 		    else
@@ -228,103 +201,56 @@ class Game
 		#INPUT: takes in the player, deck and hand to play
 		#returns a list with the deck and player
 		#plays the turn of one player
-
 		puts "#{@playerList[numPlayer].getName()}'s turn, hand #{numHand + 1}."
-
 		#in case this is a split hand with just one card, draw the second card
-		hand = @playerList[numPlayer].getHand(numHand)
-		if hand.count == 1
+		if @playerList[numPlayer].getHand(numHand).count == 1
 			hit(numPlayer, numHand)
 		end
-
 		#print out the hand values and the handfor player convenience
-		if @playerList[numPlayer].getValue(numHand)[1] != nil
-			puts "#{@playerList[numPlayer].getName()} is at #{@playerList[numPlayer].getValue(numHand)[0]}"\
-			     " with A at 11 or at #{@playerList[numPlayer].getValue(numHand)[1]} with A at 1"
-		else
-			puts "#{@playerList[numPlayer].getName()} is at #{@playerList[numPlayer].getValue(numHand)[0]}"
-		end
 		@playerList[numPlayer].printHand(numHand)
-		
 		#check for blackjack on initial deal
-		if @playerList[numPlayer].getValue(numHand)[0] == 21
-			puts "You have hit blackjack!"\
-			     " Now wait for the dealer's turn to decide winnings."
+		if @playerList[numPlayer].atBlackjack(numHand)
 			return false
 		end
-
 		#ask the user if he/she wants to split. Checks to make sure both cards are 
 		#the same, there are only two cards, and the player can afford the second
 		#bet in the split
-		if hand.count == 2 && hand[0].getCardValue() == hand[1].getCardValue()\
-		 && ((@playerList[numPlayer].totalBet() + @playerList[numPlayer].getBet(numHand)) <= @playerList[numPlayer].getPot()) 
-			puts "Do you want to split? [y/N]"
-			answerSplit = gets
-			if answerSplit.chomp == 'y'
-				@playerList[numPlayer].addHand()
-				return true
-			end
+		if @playerList[numPlayer].split(numHand)
+			return true
 		end
-
 		#check if the user wants to double down.
 		#Again, only possible if player has enough money
-		if (@playerList[numPlayer].totalBet() + @playerList[numPlayer].getBet(numHand)) <= @playerList[numPlayer].getPot()
-			puts "Do you wish to double down? [y/N]"
-			answer = gets
-			if answer.chomp == 'y'
-				#change the bet to double the initial
-				@playerList[numPlayer].setBet(2*@playerList[numPlayer].getBet(numHand), numHand) 
-			end
-		end
+		@playerList[numPlayer].doubleDown(numHand)
 		flag = false #to print the hand in the while loop
 		while true
 			if flag
 				#prints the hand value and hand for user convenience as he/she hits
-				if @playerList[numPlayer].getValue(numHand)[1] != nil
-					puts "#{@playerList[numPlayer].getName()} is at #{@playerList[numPlayer].getValue(numHand)[0]}"\
-					     " with A at 11 or at #{@playerList[numPlayer].getValue(numHand)[1]} with"\
-					     " A at 1"
-				else
-					puts "#{@playerList[numPlayer].getName()} is at #{@playerList[numPlayer].getValue(numHand)[0]}"
-				end
 				@playerList[numPlayer].printHand(numHand)
 			end
 			flag = true
 			puts "Do you want to hit or stay? [h/s]"
 			answer = gets
 			#is user hits
-			if answer.chomp == 'h'
+			case answer.chomp
+			when 'h'
 				hit(numPlayer, numHand)
 				#if the player busts, change the pot, reset the bet
-				if @playerList[numPlayer].getValue(numHand)[0] > 21
-					puts "#{@playerList[numPlayer].getName()} has busted with hand #{numHand + 1}."\
-					     " You lose your bet of #{@playerList[numPlayer].getBet()}."
-					@playerList[numPlayer].setPot(@playerList[numPlayer].getPot() - @playerList[numPlayer].getBet(numHand))
-					@playerList[numPlayer].setBet(0, numHand)
-					puts "Your pot is now #{@playerList[numPlayer].getPot()}."
-					#check if the player has lost all his/her money. 
-					if @playerList[numPlayer].getPot() == 0
-						puts "You have no money left, you have lost."
-						break
-					end
-					break
+				if @playerList[numPlayer].hasBusted(numHand)
+					return false
 				#player at blackjack
-				elsif @playerList[numPlayer].getValue(numHand)[0] == 21
-					puts "You have hit blackjack!"\
-					     " Now wait for the dealer's turn to decide winnings."
-					break
+				elsif @playerList[numPlayer].atBlackjack(numHand)
+					return false
 				end
 			#player stays
-			elsif answer.chomp == 's'
+			when 's'
 				puts "You chose to stay. Your hand's value is"\
 				     " #{@playerList[numPlayer].getValue(numHand)[0]}. Now wait for the dealer's"\
 				     " turn to decide winnings."
-				break
+				return false
 			else
 				puts "Invalid response. h for Hit, s for Stay."
 			end
 		end
-		return false
 	end
 
 	def check()
@@ -394,7 +320,13 @@ class Player
 	def printHand(numHand = 0)
 		#INPUT: number of hand to print
 		#no output
-		#prints the specified hand out in a nice format
+		#prints the value and contents of a specified hand out in a nice format
+		if getValue(numHand)[1] != nil
+			puts "#{@name} is at #{getValue(numHand)[0]}"\
+			     " with A at 11 or at #{getValue(numHand)[1]} with A at 1"
+		else
+			puts "#{@name} is at #{getValue(numHand)[0]}"
+		end
 		puts "#{@name}'s hand (number #{numHand + 1}) is"
 		@handList[numHand].each do |card|
 			puts "#{card.getName()} of #{card.getSuit()}"
@@ -492,6 +424,74 @@ class Player
     	@bet = [0]
     	@hasAce = false
     end
+
+    #game methods
+    def atBlackjack(numHand)
+    	if getValue(numHand)[0] == 21
+			puts "You have hit blackjack!"\
+			     " Now wait for the dealer's turn to decide winnings."
+			return true
+		end
+		return false
+    end
+
+    def hasBusted(numHand)
+    	if getValue(numHand)[0] > 21
+			puts "#{@name} has busted with hand #{numHand + 1}."\
+			     " You lose your bet of #{@bet[numHand]}."
+			@pot = @pot - @bet[numHand]
+			@bet[numHand] = 0
+			puts "Your pot is now #{@pot}."
+			return true
+		end
+	end
+
+	def split(numHand)
+		if @handList[numHand].count == 2 && @handList[numHand][0].getCardValue() == @handList[numHand][1].getCardValue()\
+			 && (totalBet() +@bet[numHand]) <= @pot 
+			puts "Do you want to split? [y/N]"
+			answerSplit = gets
+			if answerSplit.chomp == 'y'
+				addHand()
+				return true
+			end
+		end
+		return false
+	end
+
+	def doubleDown(numHand = 0)
+    	if (totalBet() + @bet[numHand]) <= @pot
+			puts "Do you wish to double down? [y/N]"
+			answer = gets
+			if answer.chomp == 'y'
+				#change the bet to double the initial
+				@bet[numHand] = 2*@bet[numHand] 
+			end
+		end
+    end
+
+    def scoreHand(numHand, dealerValue)
+    	currValue = getValue(numHand)[0]
+    	if ((currValue > dealerValue) && (currValue <= 21)) \
+    	  || ((dealerValue > 21) && (currValue <= 21))
+    		@pot = @pot + 2*(@bet[numHand]/3).to_i 
+    		@bet[numHand] = 0
+    		puts "#{@name}'s value of #{currValue} in hand"\
+    		     " #{numHand+1} beats the dealer. Your pot is #{@pot}"
+    	#if the player loses (opposite of above)
+    	elsif (currValue < dealerValue) && (currValue <= 21)
+    		@pot = @pot - @bet[numHand]
+    		@bet[numHand] = 0
+    		puts "#{@name}'s value of #{currValue} in hand"\
+    		     " #{numHand+1} loses to the dealer."\
+    		     " Your pot is #{@pot}"	
+		#check for a ties
+    	elsif (currValue == dealerValue)
+    		@bet[numHand] = 0
+    		puts "We have a tie. #{@name} neither wins"\
+    		     " nor loses; you get your money back."
+    	end
+    end
 end
 
 class Dealer < Player
@@ -505,7 +505,9 @@ class Dealer < Player
 
 	def printHand(numHand = 0)
 		#INPUT: optional input of number of hand
-		#prints the specified hand out, each card on a new line
+		#prints the value and contents of a specified hand out,
+		#each card on a new line
+		puts "#{@name} is at #{getValue()[0]}"
 		puts "#{@name}'s hand is"
 		@handList[numHand].each do |card|
 			puts "#{card.getName()} of #{card.getSuit()}"
