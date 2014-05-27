@@ -5,17 +5,16 @@
 #import blackjackClasses.rb for class definitions
 require_relative 'blackjackClasses'
 
-
-
 #script starts here. class definitions in LiveRamp.rb, 
 #other functions that are called are defined above
 
+#instantiate game object; create players and build deck
 game = Game.new
 
 while game.getNumPlayers() > 1
-	#deal cards and update the player list and deck
+	#invite bets from players
 	game.placeBets()
-	#necessary because ruby does not use pass by reference
+	#deal out a pair of cards to players and dealer
 	game.initialDeal()
 	#all players + dealer play
 	game.playEntireTurn()

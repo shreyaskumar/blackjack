@@ -2,38 +2,36 @@
 #Shreyas Kumar
 
 class Game
+	#class for the game object which runs the game. also stores the two 
+	#important data structures: the list of players and the deck of cards
 	def initialize()
 		@deck = Array.new
+		#build the deck
 		self.buildDeck()
 		@playerList = Array.new
+		#create players
 		self.createPlayers()
+		#facilitate deletion of players on losing
 		@numPlayers = @playerList.count
 	end
 
 	def buildDeck()
 		#no input
-		#returns a shoe of 4 decks
+		#no output
 		#Build the deck, required for any game
 		#cycle through all possible cards
 		#4 deck shoe
 		for k in 1..4
 			suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
 			cards =  [2,3,4,5,6,7,8,9,10, 'J', 'Q', 'K',  'A']
+			#all possible combinations of suits and cards forms the deck
 			suits.product(cards).collect{|i, j| @deck.push(Card.new(i, j))}
 		end
 	end
 
-	def getNumPlayers()
-		return @numPlayers
-	end
-
-	def getDeck()
-		return @deck
-	end
-
 	def createPlayers()
 		#no input
-		#returns an array of players
+		#no output
 		#Creates a user specified number of players (maximum of 12, so the cards 
 		#don't become too predictable)
 	    @playerList.push(Player.new('Player 1'))
@@ -64,8 +62,8 @@ class Game
 	end
 
 	def dealCard(numPlayer, numHand = 0)
-		#INPUT: the deck, player and hand to add card to
-		#returns the modified deck and the player
+		#INPUT: number denoting the player and number of hand to deal to
+		#no output
 		#deal a random card
 		cardToDeal = @deck.sample() #change to choice for ruby1.8.7
 		@playerList[numPlayer].addCard(cardToDeal, numHand)
@@ -73,8 +71,7 @@ class Game
 	end
 
 	def initialDeal()
-		#INPUT: takes in the deck and the list of players
-		#returns a list with the deck and list of players
+		#no input or output
 		#the first set of cards are dealt 
 		#(two cards to each player including the dealer)
 		for j in 0..1
@@ -87,10 +84,9 @@ class Game
 	end
 
 	def placeBets()
-		#INPUT: takes in the list of players
-		#returns the modified list of players
-		#method that allows each player to place bets. Bets can only be integers,
-		#and have to be less than their pot.
+		#no input or output
+		#method that allows each player to place bets. Bets can only be 
+		#positive integers and have to be less than their pot.
 		@playerList[0..-2].each do |player| #cycle through all players except for the
 			while true 			  #dealer (dealer is the last element of playerList)
 				puts "#{player.getName()}, place your bet."\
@@ -99,8 +95,8 @@ class Game
 				if !(bet.chomp.class == Fixnum)
 					"This game only accepts integer bets"
 				end
-				if bet.chomp.to_i == 0
-					puts "You have to bet something to play."
+				if bet.chomp.to_i <= 0
+					puts "You're bet has to be a positive integer."
 				elsif bet.chomp.to_i <= player.getPot()
 					player.setBet(bet.chomp.to_i, 0) #sets the specified bet
 					break
@@ -112,8 +108,8 @@ class Game
 	end
 
 	def hit(numPlayer, numHand = 0)
-		#INPUT: takes in the player, deck and number of hand 
-		#returns a list with the deck and player
+		#INPUT: takes in the number denoting the player and the number of hand
+		#no output
 		#method that allows a player/dealer to hit
 		dealCard(numPlayer, numHand)
 		cardToDeal = @playerList[numPlayer].getHand(numHand).last
@@ -124,8 +120,7 @@ class Game
     
 	
 	def playTurnDealer()
-		#INPUT: takes in the dealer and deck
-		#returns a list with the deck and dealer
+		#no input or outpu
 		#dealer plays his turn. Counts an ace as a 11 unless it means he busts.
 		# Always hits at 16 or less, and stays at 17 or more
 		while true
@@ -153,7 +148,7 @@ class Game
 
 
 	def playEntireTurn()
-		#INPUT: takes in the deck and list of players
+		#INPUT: no input or outpur
 		#plays the turn for all players including dealer.
 		#cycle through players, and all hands of each player
 		for numPlayer in 0..@playerList.count - 1
@@ -178,12 +173,14 @@ class Game
 	end
     
     def scoreTurn() 
+    	#no input or output
 	    #scoring to see who wins, for those who did not bust
 	    dealerValue = @playerList.last.getValue()[0]
 	    j = 0
 	    #iterate through players and each hand
 	    @playerList[0..-2].each do |currPlayer|
 	        for numHand in 0..currPlayer.getNumHands() - 1
+	        	#scores the hand depending on the relative value of the hand to the dealer's hand
 		    	currPlayer.scoreHand(numHand, dealerValue)
 		    end
 		    #if a player is bankrupt, remove them from the table
@@ -198,9 +195,8 @@ class Game
 	end
 
 	def playSingleTurn(numPlayer, numHand = 0)
-		#INPUT: takes in the player, deck and hand to play
-		#returns a list with the deck and player
-		#plays the turn of one player
+		#INPUT: takes in the number denoting the player and the number of the hand returns a 
+		#boolean denoting if a split occured, true if it did occur plays the turn of one player
 		puts "#{@playerList[numPlayer].getName()}'s turn, hand #{numHand + 1}."
 		#in case this is a split hand with just one card, draw the second card
 		if @playerList[numPlayer].getHand(numHand).count == 1
@@ -208,18 +204,14 @@ class Game
 		end
 		#print out the hand values and the handfor player convenience
 		@playerList[numPlayer].printHand(numHand)
-		#check for blackjack on initial deal
-		if @playerList[numPlayer].atBlackjack(numHand)
+		if @playerList[numPlayer].atBlackjack(numHand) #check for blackjack on initial deal
 			return false
 		end
-		#ask the user if he/she wants to split. Checks to make sure both cards are 
-		#the same, there are only two cards, and the player can afford the second
-		#bet in the split
-		if @playerList[numPlayer].split(numHand)
+		if @playerList[numPlayer].split(numHand) #ask the user if he/she wants to split. 
+			#return true if there is a split
 			return true
 		end
-		#check if the user wants to double down.
-		#Again, only possible if player has enough money
+		#check if the user wants to double down, again, only possible if player has enough money
 		@playerList[numPlayer].doubleDown(numHand)
 		flag = false #to print the hand in the while loop
 		while true
@@ -254,6 +246,8 @@ class Game
 	end
 
 	def check()
+		#no input, boolean output that determines if the players want to keep playing
+		#output of true if they want to stop, default answer is yes
 		puts "Do you want to keep playing? [Y/n]"
 		answer = gets
 		if answer.chomp == 'n'
@@ -269,6 +263,8 @@ class Game
 	end
 
 	def end()
+		#no input or output
+		#exit messages where each person still in the game have their pots displayed
 		if @playerList.count  == 1
 			puts "All players have lost."
 		else
@@ -321,7 +317,7 @@ class Player
 		#INPUT: number of hand to print
 		#no output
 		#prints the value and contents of a specified hand out in a nice format
-		if getValue(numHand)[1] != nil
+		if getValue(numHand)[1] != nil #has an ace and it can be counted as a 11
 			puts "#{@name} is at #{getValue(numHand)[0]}"\
 			     " with A at 11 or at #{getValue(numHand)[1]} with A at 1"
 		else
@@ -426,7 +422,8 @@ class Player
     end
 
     #game methods
-    def atBlackjack(numHand)
+    def atBlackjack(numHand= 0)
+    	#optional input of the number of hand to check. outputs a bool, true if at blackjack
     	if getValue(numHand)[0] == 21
 			puts "You have hit blackjack!"\
 			     " Now wait for the dealer's turn to decide winnings."
@@ -435,7 +432,8 @@ class Player
 		return false
     end
 
-    def hasBusted(numHand)
+    def hasBusted(numHand = 0)
+    	#optional input of the number of hand to check, outputs a bool, true if player has busted
     	if getValue(numHand)[0] > 21
 			puts "#{@name} has busted with hand #{numHand + 1}."\
 			     " You lose your bet of #{@bet[numHand]}."
@@ -446,9 +444,13 @@ class Player
 		end
 	end
 
-	def split(numHand)
-		if @handList[numHand].count == 2 && @handList[numHand][0].getCardValue() == @handList[numHand][1].getCardValue()\
-			 && (totalBet() +@bet[numHand]) <= @pot 
+	def split(numHand = 0)
+		#optional input of the number of the hand to split, bool output, true if the player decides
+		#to split
+		#Checks to make sure both cards are the same, there are only two cards, 
+		#and the player can afford the second bet in the split
+		if @handList[numHand].count == 2 && @handList[numHand][0].getCardValue() ==\
+		 @handList[numHand][1].getCardValue() && (totalBet() +@bet[numHand]) <= @pot 
 			puts "Do you want to split? [y/N]"
 			answerSplit = gets
 			if answerSplit.chomp == 'y'
@@ -460,6 +462,7 @@ class Player
 	end
 
 	def doubleDown(numHand = 0)
+		#no input or output, queries and executes doubling down if the player desires to do so
     	if (totalBet() + @bet[numHand]) <= @pot
 			puts "Do you wish to double down? [y/N]"
 			answer = gets
@@ -471,10 +474,13 @@ class Player
     end
 
     def scoreHand(numHand, dealerValue)
+    	#takes in the  the number of the hand and the value of the dealer's hand to compare against
+    	#no output, scores for all cases except if the player busted on hitting
     	currValue = getValue(numHand)[0]
+    	#if the player beats the dealer
     	if ((currValue > dealerValue) && (currValue <= 21)) \
     	  || ((dealerValue > 21) && (currValue <= 21))
-    		@pot = @pot + 2*(@bet[numHand]/3).to_i 
+    		@pot = @pot + (2*@bet[numHand]/3).to_i 
     		@bet[numHand] = 0
     		puts "#{@name}'s value of #{currValue} in hand"\
     		     " #{numHand+1} beats the dealer. Your pot is #{@pot}"
