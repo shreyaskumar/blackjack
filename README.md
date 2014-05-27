@@ -1,7 +1,7 @@
 README for BlackJack (LiveRamp coding challenge)
 
 To run, install Ruby and then execute
-run blackjackClasses.rb
+ruby blackjackClasses.rb
 
 Requires ruby 2.00 (2.00 version available at https://github.com/shreyaskumar/blackjack)
 
