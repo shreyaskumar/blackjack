@@ -10,6 +10,7 @@ class Game
 		#initializes three data structures associated with the game object
 		#a deck of cards (an array)
 		#a list of players
+		#number of people who have busted (avoid dealer playing if everyone busts)
 		puts "Starting Blackjack."
 		@deck = Array.new
 		#build the deck
@@ -17,6 +18,7 @@ class Game
 		@playerList = Array.new
 		#create players
 		self.createPlayers()
+		@numBusted = 0
 	end
 
 	def buildDeck()
@@ -25,12 +27,11 @@ class Game
 		#Build the deck, required for any game
 		#cycle through all possible cards
 		#4 deck shoe
-		for k in 1..4
-			suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
-			cards =  [2,3,4,5,6,7,8,9,10, 'J', 'Q', 'K',  'A']
-			#all possible combinations of suits and cards forms the deck
-			suits.product(cards).collect{|i, j| @deck.push(Card.new(i, j))}
-		end
+		suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
+		cards =  [2,3,4,5,6,7,8,9,10, 'J', 'Q', 'K',  'A']
+		#all possible combinations of suits and cards forms the deck
+		suits.product(cards).collect{|i, j| @deck.push(Card.new(i, j))}
+		@deck = @deck*4
 	end
 
 	def createPlayers()
@@ -78,12 +79,8 @@ class Game
 		#no input or output
 		#the first set of cards are dealt 
 		#(two cards to each player including the dealer)
-		for j in 0..1
-			for numPlayer in 0..@playerList.count - 1
-				dealCard(numPlayer,  0)
-				#make sure we stay true to the game: you can still count cards!
-			end
-		end
+		(0..@playerList.count - 1).map{|numPlayer| dealCard(numPlayer,  0)}
+		(0..@playerList.count - 1).map{|numPlayer| dealCard(numPlayer,  0)}
 		@playerList.last.showCard()
 	end
 
@@ -154,19 +151,14 @@ class Game
     	#no input or output
 	    #scoring to see who wins, for those who did not bust
 	    dealerValue = @playerList.last.getValue()[0]
-	    j = 0
 	    #iterate through players and each hand
 	    @playerList[0..-2].each do |currPlayer|
-	        for numHand in 0..currPlayer.getNumHands() - 1
-	        	#scores the hand depending on the relative value of the hand to the dealer's hand
-		    	currPlayer.scoreHand(numHand, dealerValue)
-		    end
+        	#scores the hand depending on the relative value of the hand to the dealer's hand
+	    	(0..currPlayer.getNumHands() - 1).map{|numHand| currPlayer.scoreHand(numHand, dealerValue)}
 		    #if a player is bankrupt, remove them from the table
 		    if currPlayer.getPot() == 0
 				puts "#{currPlayer.getName()} has no money left, you have lost."
-		    	@playerList.delete_at(j)
-		    else
-		    	j += 1
+		    	@playerList.delete(currPlayer)
 		    end
 	    end
 	end
@@ -205,6 +197,7 @@ class Game
 				hit(numPlayer, numHand)
 				#if the player busts, change the pot, reset the bet
 				if @playerList[numPlayer].hasBusted(numHand)
+					@numBusted += 1
 					return false
 				#player at blackjack
 				elsif @playerList[numPlayer].atBlackjack(numHand)
@@ -238,9 +231,12 @@ class Game
 					if !bool
 						numHand += 1
 					end
-				else
+				elsif !(@numBusted == @playerList.count - 1)
 					#dealer plays turn according to the rules
 					playTurnDealer()
+					numHand += 1
+				else
+					puts "All players have busted."
 					numHand += 1
 				end
 			end
@@ -255,11 +251,10 @@ class Game
 		if answer.chomp == 'n'
 			return true
 		else
-			@playerList.each do |player|
-				player.reset() 			#continue playing
-			end
+			@playerList.map{|player| player.reset()}	#continue playing
 			@deck = Array.new
 			buildDeck()
+			@numBusted = 0
 			return false
 		end
 	end
@@ -581,7 +576,6 @@ class Card
 		return @suit
 	end
 end
-
 
 #start of script. create a game object and play the game
 game = Game.new
