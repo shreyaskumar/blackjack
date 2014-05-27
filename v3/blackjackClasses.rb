@@ -5,6 +5,10 @@ class Game
 	#class for the game object which runs the game. also stores the two 
 	#important data structures: the list of players and the deck of cards
 	def initialize()
+		#initializes three data structures associated with the game object
+		#a deck of cards (an array)
+		#a list of players
+		#an integer for the number of players
 		@deck = Array.new
 		#build the deck
 		self.buildDeck()
@@ -14,6 +18,10 @@ class Game
 		#facilitate deletion of players on losing
 		@numPlayers = @playerList.count
 	end
+
+	def getNumPlayers()
+		#method that returns the number of players (required to for the loop that runs a game)
+		return @numPlayers
 
 	def buildDeck()
 		#no input
