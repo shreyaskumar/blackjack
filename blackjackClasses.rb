@@ -84,26 +84,24 @@ class Game
 		@playerList.last.showCard()
 	end
 
-	def placeBets()
+	def placeBets(numPlayer)
 		#no input or output
-		#method that allows each player to place bets. Bets can only be 
+		#method that allows a player to place bets. Bets can only be 
 		#positive integers and have to be less than their pot.
-		@playerList[0..-2].each do |player| #cycle through all players except for the
-			while true 			  #dealer (dealer is the last element of playerList)
-				puts "#{player.getName()}, place your bet."\
-					 " Your pot is #{player.getPot()}."
-				bet = gets
-				if !(bet.chomp.class == Fixnum)
-					"This game only accepts integer bets"
-				end
-				if bet.chomp.to_i <= 0
-					puts "You're bet has to be a positive integer."
-				elsif bet.chomp.to_i <= player.getPot()
-					player.setBet(bet.chomp.to_i, 0) #sets the specified bet
-					break
-				else
-					puts "Your pot is not big enough to support that bet."
-				end
+		while true 			  
+			puts "#{@playerList[numPlayer].getName()}, place your bet."\
+				 " Your pot is #{@playerList[numPlayer].getPot()}."
+			bet = gets
+			if !(bet.chomp.class == Fixnum)
+				"This game only accepts integer bets"
+			end
+			if bet.chomp.to_i <= 0
+				puts "You're bet has to be a positive integer."
+			elsif bet.chomp.to_i <= @playerList[numPlayer].getPot()
+				@playerList[numPlayer].setBet(bet.chomp.to_i, 0) #sets the specified bet
+				break
+			else
+				puts "Your pot is not big enough to support that bet."
 			end
 		end
 	end
@@ -158,9 +156,9 @@ class Game
 		    #if a player is bankrupt, remove them from the table
 		    if currPlayer.getPot() == 0
 				puts "#{currPlayer.getName()} has no money left, you have lost."
-		    	@playerList.delete(currPlayer)
 		    end
 	    end
+	    @playerList.delete_if{|currPlayer| currPlayer.getPot() == 0}
 	end
 
 	def playSingleTurn(numPlayer, numHand = 0)
@@ -215,30 +213,28 @@ class Game
 		end
 	end
 
-	def playEntireTurn()
+	def playEntireTurn(numPlayer)
 		#INPUT: no input or output
-		#plays the turn for all players including dealer.
-		#cycle through players, and all hands of each player
-		for numPlayer in 0..@playerList.count - 1
-			numHand = 0
-			while numHand <  @playerList[numPlayer].getNumHands()
-				if @playerList[numPlayer].getName() != 'Dealer'
-					#play the turn
-					bool = playSingleTurn(numPlayer, numHand) 
-					#if the turn did not result in a split, go to next hand
-					#else, stay on the same hand
-					#NEEDS SOME TESTING HERE
-					if !bool
-						numHand += 1
-					end
-				elsif !(@numBusted == @playerList.count - 1)
-					#dealer plays turn according to the rules
-					playTurnDealer()
-					numHand += 1
-				else
-					puts "All players have busted."
+		#plays the turn for all hands of a player including dealer.
+		#cycle through all hands of each player
+		numHand = 0
+		while numHand <  @playerList[numPlayer].getNumHands()
+			if @playerList[numPlayer].getName() != 'Dealer'
+				#play the turn
+				bool = playSingleTurn(numPlayer, numHand) 
+				#if the turn did not result in a split, go to next hand
+				#else, stay on the same hand
+				#NEEDS SOME TESTING HERE
+				if !bool
 					numHand += 1
 				end
+			elsif !(@numBusted == @playerList.count - 1)
+				#dealer plays turn according to the rules
+				playTurnDealer()
+				numHand += 1
+			else
+				puts "All players have busted."
+				numHand += 1
 			end
 		end
 	end
@@ -275,12 +271,12 @@ class Game
 	def play()
 		#no input or output, runs the entire game
 		while true
-			#invite bets from players
-			placeBets()
+			#invite bets from players except the dealer, dealer is the last on the list
+			(0..@playerList.count-2).map{|numPlayer| placeBets(numPlayer)}
 			#deal out a pair of cards to players and dealer
 			initialDeal()
 			#all players + dealer play
-			playEntireTurn()
+			(0..@playerList.count - 1).map{|numPlayer| playEntireTurn(numPlayer)}
 			scoreTurn()
 			#if no players are left, end game
 			if @playerList.count == 1
