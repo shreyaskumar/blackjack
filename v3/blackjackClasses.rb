@@ -8,20 +8,14 @@ class Game
 		#initializes three data structures associated with the game object
 		#a deck of cards (an array)
 		#a list of players
-		#an integer for the number of players
+		puts "Starting Blackjack."
 		@deck = Array.new
 		#build the deck
 		self.buildDeck()
 		@playerList = Array.new
 		#create players
 		self.createPlayers()
-		#facilitate deletion of players on losing
-		@numPlayers = @playerList.count
 	end
-
-	def getNumPlayers()
-		#method that returns the number of players (required to for the loop that runs a game)
-		return @numPlayers
 
 	def buildDeck()
 		#no input
@@ -154,32 +148,6 @@ class Game
 		end
 	end
 
-
-	def playEntireTurn()
-		#INPUT: no input or outpur
-		#plays the turn for all players including dealer.
-		#cycle through players, and all hands of each player
-		for numPlayer in 0..@playerList.count - 1
-			numHand = 0
-			while numHand <  @playerList[numPlayer].getNumHands()
-				if @playerList[numPlayer].getName() != 'Dealer'
-					#play the turn
-					bool = playSingleTurn(numPlayer, numHand) 
-					#if the turn did not result in a split, go to next hand
-					#else, stay on the same hand
-					#NEEDS SOME TESTING HERE
-					if !bool
-						numHand += 1
-					end
-				else
-					#dealer plays turn according to the rules
-					playTurnDealer()
-					numHand += 1
-				end
-			end
-		end
-	end
-    
     def scoreTurn() 
     	#no input or output
 	    #scoring to see who wins, for those who did not bust
@@ -194,8 +162,7 @@ class Game
 		    #if a player is bankrupt, remove them from the table
 		    if currPlayer.getPot() == 0
 				puts "#{currPlayer.getName()} has no money left, you have lost."
-		    	playerList.delete_at(j)
-		    	@numPlayers -= 1
+		    	@playerList.delete_at(j)
 		    else
 		    	j += 1
 		    end
@@ -253,6 +220,31 @@ class Game
 		end
 	end
 
+	def playEntireTurn()
+		#INPUT: no input or output
+		#plays the turn for all players including dealer.
+		#cycle through players, and all hands of each player
+		for numPlayer in 0..@playerList.count - 1
+			numHand = 0
+			while numHand <  @playerList[numPlayer].getNumHands()
+				if @playerList[numPlayer].getName() != 'Dealer'
+					#play the turn
+					bool = playSingleTurn(numPlayer, numHand) 
+					#if the turn did not result in a split, go to next hand
+					#else, stay on the same hand
+					#NEEDS SOME TESTING HERE
+					if !bool
+						numHand += 1
+					end
+				else
+					#dealer plays turn according to the rules
+					playTurnDealer()
+					numHand += 1
+				end
+			end
+		end
+	end
+
 	def check()
 		#no input, boolean output that determines if the players want to keep playing
 		#output of true if they want to stop, default answer is yes
@@ -270,7 +262,7 @@ class Game
 		end
 	end
 
-	def end()
+	def endGame()
 		#no input or output
 		#exit messages where each person still in the game have their pots displayed
 		if @playerList.count  == 1
@@ -282,9 +274,31 @@ class Game
 		end
 		puts "Thank you for playing"
 	end
+
+	def play()
+		#no input or output, runs the entire game
+		while true
+			#invite bets from players
+			placeBets()
+			#deal out a pair of cards to players and dealer
+			initialDeal()
+			#all players + dealer play
+			playEntireTurn()
+			scoreTurn()
+			#if no players are left, end game
+			if @playerList.count == 1
+				break
+			end
+			#option to opt out
+			bool = check()
+			if bool
+				break
+			end
+		end
+		#ending messages
+		endGame()
+	end
 end
-
-
 
 class Player
 	#the basic blackjack player
@@ -528,7 +542,6 @@ class Dealer < Player
 		end
 	end
 end
-
 
 class Card
 	#card class that is used to build the deck
