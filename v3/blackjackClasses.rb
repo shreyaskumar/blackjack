@@ -1,5 +1,7 @@
+#Author: Shreyas Kumar
+#LiveRamp BlackJack programming challenge
+
 #defines the classes necessary for gameplay.rb (class Player and class Card)
-#Shreyas Kumar
 
 class Game
 	#class for the game object which runs the game. also stores the two 
@@ -579,5 +581,10 @@ class Card
 		return @suit
 	end
 end
+
+
+#start of script. create a game object and play the game
+game = Game.new
+game.play()
 
 
